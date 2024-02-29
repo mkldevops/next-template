@@ -1,5 +1,5 @@
-import { getAuthSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/src/lib/auth";
+import { prisma } from "@/src/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { cache } from "react";
 
@@ -16,7 +16,7 @@ export const userSelect = {
 };
 
 export const getUser = async () => {
-  const session = await getAuthSession();
+  const session = await auth();
   if (!session) {
     throw new Error("Not authenticated");
   }
@@ -43,7 +43,7 @@ export const getUserProfile = cache(async (userId: string) => {
 });
 
 export const getUserEdit = async () => {
-  const session = await getAuthSession();
+  const session = await auth();
   if (!session) {
     throw new Error("Not authenticated");
   }

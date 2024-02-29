@@ -1,10 +1,10 @@
-import { getAuthSession } from "@/lib/auth";
+import { auth } from "@/src/lib/auth";
 import { MessagesSquare } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "../theme/ThemeToggle";
 
 export const Header = async () => {
-  const session = await getAuthSession();
+  const session = await auth();
 
   return (
     <header className="border-b border-b-accent fixed top-0 z-40 bg-background w-full">

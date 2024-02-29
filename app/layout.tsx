@@ -17,10 +17,9 @@ export const metadata: Metadata = {
 
 type LayoutProps = {
   children: ReactNode;
-  modal?: ReactNode;
 };
 
-export default function RootLayout({ children, modal }: LayoutProps) {
+export default function RootLayout({ children }: LayoutProps) {
   return (
     <html lang="en">
       <body className={clsx(inter.className, "bg-background h-full")}>
@@ -33,7 +32,6 @@ export default function RootLayout({ children, modal }: LayoutProps) {
             <Footer />
           </div>
           <Toaster />
-          {modal}
         </ThemeProvider>
       </body>
     </html>

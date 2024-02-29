@@ -1,3 +1,5 @@
+include .env
+
 .DEFAULT_GOAL := dev
 
 ## —— React Makefile ———————————————————————————————————
@@ -10,7 +12,7 @@ install: ## Install dependencies
 	bun install
 
 dev: install docker-up ## Run the development server
-	bun dev
+	bun dev -p $(NEXT_PORT)
 
 build: install ## Build the application
 	bun run build
