@@ -1,67 +1,67 @@
 import { auth } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { cache } from "react";
 
 export const userSelect = {
-  id: true,
-  name: true,
-  username: true,
-  emailVerified: true,
-  email: true,
-  image: true,
-  link: true,
-  bio: true,
-  createdAt: true,
+	id: true,
+	name: true,
+	username: true,
+	emailVerified: true,
+	email: true,
+	image: true,
+	link: true,
+	bio: true,
+	createdAt: true,
 };
 
 export const getUser = async () => {
-  const session = await auth();
-  if (!session) {
-    throw new Error("Not authenticated");
-  }
+	const session = await auth();
+	if (!session) {
+		throw new Error("Not authenticated");
+	}
 
-  const user = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: session.user.id,
-    },
-    select: userSelect,
-  });
+	const user = await prisma.user.findUniqueOrThrow({
+		where: {
+			id: session.user.id,
+		},
+		select: userSelect,
+	});
 
-  return user;
+	return user;
 };
 
 export const getUserProfile = cache(async (userId: string) => {
-  console.log("Fetching user profile");
+	console.log("Fetching user profile");
 
-  return await prisma.user.findFirstOrThrow({
-    where: {
-      OR: [{ id: userId }, { username: userId }],
-    },
-    select: userSelect,
-  });
+	return await prisma.user.findFirstOrThrow({
+		where: {
+			OR: [{ id: userId }, { username: userId }],
+		},
+		select: userSelect,
+	});
 });
 
 export const getUserEdit = async () => {
-  const session = await auth();
-  if (!session) {
-    throw new Error("Not authenticated");
-  }
+	const session = await auth();
+	if (!session) {
+		throw new Error("Not authenticated");
+	}
 
-  return await prisma.user.findUniqueOrThrow({
-    where: {
-      id: session.user.id,
-    },
-    select: userSelect,
-  });
+	return await prisma.user.findUniqueOrThrow({
+		where: {
+			id: session.user.id,
+		},
+		select: userSelect,
+	});
 };
 
 export type User = NonNullable<Prisma.PromiseReturnType<typeof getUser>>;
 
 export type UserProfile = NonNullable<
-  Prisma.PromiseReturnType<typeof getUserProfile>
+	Prisma.PromiseReturnType<typeof getUserProfile>
 >;
 
 export type UserEdit = NonNullable<
-  Prisma.PromiseReturnType<typeof getUserEdit>
+	Prisma.PromiseReturnType<typeof getUserEdit>
 >;

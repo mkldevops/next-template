@@ -8,7 +8,11 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  admin
+  user
 }
 
 // next auth schema
@@ -56,10 +60,10 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-
+  role          Role[]      @default([user])
   username      String    @unique
   bio           String?
-  link         String?
+  link          String?
   createdAt     DateTime  @default(now())
 
   accounts      Account[]
