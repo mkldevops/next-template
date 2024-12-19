@@ -1,3 +1,5 @@
+"use client";
+
 import { GoogleButton } from "@/components/auth/google-button";
 import {
   Card,

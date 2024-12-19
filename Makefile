@@ -3,9 +3,10 @@ ifneq ("$(wildcard .env.local)","")
 	include .env.local
 endif
 
-PACKAGE_MANAGER ?= bun
-X_MANAGER ?= bunx
-NEXT_PORT ?= 3000
+PACKAGE_MANAGER 	?= bun
+X_MANAGER 				?= bunx
+NEXT_PORT 				?= 3000
+DOCKER_COMPOSE 		?= docker compose 
 
 .DEFAULT_GOAL := dev
 
@@ -56,47 +57,48 @@ prisma-reset: ## Reset prisma
 
 ## —— Linters ———————————————————————————————————
 lint: ## Run all linters
-	bx biome check --write
+	$(PACKAGE_MANAGER) biome check --fix --unsafe
+	$(PACKAGE_MANAGER) biome check --write
 	$(PACKAGE_MANAGER) run prisma validate
 	$(PACKAGE_MANAGER) run prisma format
 
-analyze: lint build ## Run all linters and tests
+check: lint build ## Run all linters and tests
 
 ## —— Git ———————————————————————————————————
 git-clean-branches: ## Clean merged branches
 	@git remote prune origin
 	(git branch --merged | egrep -v "(^\*|main|master|dev)" | xargs git branch -d) || true
 
-git-rebase: ## Rebase current branch
-	git pull --rebase origin main
+git-rebase-main:
+	git pull origin main --rebase
 
-message ?= $(shell git branch --show-current | sed -E 's/^([0-9]+)-([^-]+)-(.+)/\2: \#\1 \3/' | sed "s/-/ /g")
+git-pull-porcelain: ## Met à jour le code depuis le dépôt git avec rebase
+	@if [ "$(shell git status --porcelain | wc -l)" -gt 0 ]; then git stash && git pull --rebase && git stash pop; else git pull --rebase; fi
+
+msg ?= $(shell git branch --show-current | sed -E 's/^([0-9]+)-([^-]+)-(.+)/\2: \#\1 \3/' | sed "s/-/ /g")
 auto-commit: ## Auto commit
-	@git add .
-	@git commit -m "${message}" || true
+	@if [ "$(shell git status --porcelain | wc -l)" -gt 0 ]; then git add .; git commit -m "$(msg)" || true; fi
 
-current_branch=$(shell git rev-parse --abbrev-ref HEAD)
-push: ## Push current branch
-	@git push origin "$(current_branch)" --force-with-lease
+push: check auto-commit ## Ajoute, commit et pousse les modifications vers le dépôt git
+	git pull origin $(shell git branch --show-current) --rebase
+	git push origin "$(shell git branch --show-current)"
 
-
-commit: analyze prisma-migrate auto-commit git-rebase push ## Commit and push
 
 ## —— Docker ———————————————————————————————————
 docker-up: ## Start docker
-	@docker compose up -d --wait
+	$(DOCKER_COMPOSE) up -d --wait
 
 docker-destroy: ## Destroy docker
-	@docker compose down --remove-orphans --volumes --rmi all
+	$(DOCKER_COMPOSE) down --remove-orphans --volumes --rmi all
 
 docker-down: ## Stop docker
-	@docker compose down --remove-orphans
+	$(DOCKER_COMPOSE) down --remove-orphans
 
 docker-db:
-	@docker compose exec -ti database psql app password
+	$(DOCKER_COMPOSE) exec -ti database psql app password
 
 docker-logs:
-	@docker compose logs -f $(c)
+	$(DOCKER_COMPOSE) logs -f $(c)
 
 docker-ps:
-	@docker compose ps -a
+	$(DOCKER_COMPOSE) ps -a
